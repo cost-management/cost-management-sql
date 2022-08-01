@@ -1,25 +1,27 @@
+create extension if not exists "uuid-ossp" with schema public;
+
 create table gender (
-    id uuid primary key,
+    id uuid default public.uuid_generate_v4() primary key,
     name text unique not null
 );
 
 create table currency (
-    id uuid primary key,
+    id uuid default public.uuid_generate_v4() primary key,
     name text unique not null
 );
 
 create table folder_type (
-    id uuid primary key,
+    id uuid default public.uuid_generate_v4() primary key,
     name text unique not null
 );
 
 create table income_category (
-    id uuid primary key,
+    id uuid default public.uuid_generate_v4() primary key,
     name text unique not null
 );
 
 create table customer (
-    customer_id uuid primary key,
+    customer_id uuid default public.uuid_generate_v4() primary key,
     email text unique not null,
     birthday time,
     nick_name text,
@@ -29,7 +31,7 @@ create table customer (
 );
 
 create table budget (
-    id uuid primary key,
+    id uuid default public.uuid_generate_v4() primary key,
     title text not null,
     owner_id uuid references customer(customer_id) on delete cascade,
     created_at timestamp
@@ -49,7 +51,7 @@ create table invite (
 );
 
 create table folder (
-    id uuid primary key,
+    id uuid default public.uuid_generate_v4() primary key,
     budget_id uuid not null references budget(id),
     title text,
     type_id uuid references folder_type(id),
@@ -58,7 +60,7 @@ create table folder (
 );
 
 create table income (
-    id uuid primary key,
+    id uuid default public.uuid_generate_v4() primary key,
     title text,
     category_id uuid references income_category(id),
     customer_id uuid references customer(customer_id),
