@@ -30,29 +30,22 @@ create table customer (
     gender_id uuid references gender(id)
 );
 
-create table budget (
-    id uuid default public.uuid_generate_v4() primary key,
-    title text not null,
-    owner_id uuid references customer(customer_id) on delete cascade,
-    created_at timestamp
-);
-
 create table customer_budget (
-    customer_id uuid not null references budget(id),
+    customer_id uuid not null references folder(id),
     budget_id uuid not null references customer(customer_id),
     constraint customer_budget_id primary key (customer_id, budget_id)
 );
 
 create table invite (
     budget_owner_id uuid not null references customer(customer_id),
-    budget_id uuid not null references budget(id),
+    folder_id uuid not null references folder(id),
     invited_customer_id uuid not null references customer(customer_id),
-    constraint invite_id primary key (budget_owner_id, budget_id, invited_customer_id)
+    constraint invite_id primary key (budget_owner_id, folder_id, invited_customer_id)
 );
 
 create table folder (
     id uuid default public.uuid_generate_v4() primary key,
-    budget_id uuid not null references budget(id),
+    owner_id uuid references customer(customer_id) on delete cascade,
     title text,
     type_id uuid references folder_type(id),
     currency_id uuid references currency(id),
@@ -62,6 +55,7 @@ create table folder (
 create table income (
     id uuid default public.uuid_generate_v4() primary key,
     title text,
+    folder_id uuid references folder(id) on delete cascade,
     category_id uuid references income_category(id),
     customer_id uuid references customer(customer_id),
     create_at timestamp,
