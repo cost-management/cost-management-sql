@@ -30,6 +30,15 @@ create table customer (
     gender_id uuid references gender(id)
 );
 
+create table folder (
+    id uuid default public.uuid_generate_v4() primary key,
+    owner_id uuid references customer(customer_id) on delete cascade,
+    title text,
+    type_id uuid references folder_type(id),
+    currency_id uuid references currency(id),
+    created_at timestamp
+);
+
 create table customer_folder (
     customer_id uuid not null references customer(customer_id),
     folder_id uuid not null references folder(id),
@@ -41,15 +50,6 @@ create table invite (
     folder_id uuid not null references folder(id),
     invited_customer_id uuid not null references customer(customer_id),
     constraint invite_id primary key (folder_owner_id, folder_id, invited_customer_id)
-);
-
-create table folder (
-    id uuid default public.uuid_generate_v4() primary key,
-    owner_id uuid references customer(customer_id) on delete cascade,
-    title text,
-    type_id uuid references folder_type(id),
-    currency_id uuid references currency(id),
-    created_at timestamp
 );
 
 create table income (
