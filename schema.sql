@@ -30,17 +30,17 @@ create table customer (
     gender_id uuid references gender(id)
 );
 
-create table customer_budget (
-    customer_id uuid not null references folder(id),
-    budget_id uuid not null references customer(customer_id),
-    constraint customer_budget_id primary key (customer_id, budget_id)
+create table customer_folder (
+    customer_id uuid not null references customer(customer_id),
+    folder_id uuid not null references folder(id),
+    constraint customer_budget_id primary key (customer_id, folder_id)
 );
 
 create table invite (
-    budget_owner_id uuid not null references customer(customer_id),
+    folder_owner_id uuid not null references customer(customer_id),
     folder_id uuid not null references folder(id),
     invited_customer_id uuid not null references customer(customer_id),
-    constraint invite_id primary key (budget_owner_id, folder_id, invited_customer_id)
+    constraint invite_id primary key (folder_owner_id, folder_id, invited_customer_id)
 );
 
 create table folder (
