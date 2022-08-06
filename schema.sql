@@ -12,7 +12,7 @@ create table folder (
     owner_id uuid not null,
     title text,
     folder_type folder_type,
-    currency_id currency,
+    currency currency,
     created_at timestamp
 );
 
