@@ -7,6 +7,7 @@ create type currency as enum ('UAH', 'USD');
 create type folder_type as enum ('CARD', 'CASH');
 create type income_category as enum ('FOOD', 'CAFE');
 create type gender as enum ('UNDEFINED', 'MALE', 'FEMALE');
+create type invited_customer_role as enum ('ADMIN', 'USER');
 
 create table customer (
     id uuid not null,
