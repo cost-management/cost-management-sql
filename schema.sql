@@ -10,7 +10,7 @@ create type gender as enum ('UNDEFINED', 'MALE', 'FEMALE');
 create type invited_customer_role as enum ('ADMIN', 'USER');
 
 create table customer (
-    id uuid not null,
+    id uuid primary key not null,
     email text unique not null,
     birthday time,
     nick_name text,
@@ -36,7 +36,7 @@ create table customer_folder (
 
 create table invite (
     folder_owner_id uuid not null,
-    folder_id uuid not null references folder,
+    folder_id uuid not null references folder on delete cascade,
     invited_customer_id uuid not null,
     created_at timestamptz,
     constraint invite_id primary key (folder_owner_id, folder_id, invited_customer_id)
@@ -49,6 +49,6 @@ create table income (
     income_category income_category,
     customer_id uuid not null references customer,
     created_at timestamptz,
-    amount decimal not null,
+    amount double precision not null,
     timezone smallint
 )
