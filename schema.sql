@@ -22,7 +22,7 @@ create table customer (
 
 create table folder (
     id uuid default public.uuid_generate_v4() primary key,
-    title text,
+    title text not null,
     folder_type folder_type not null default 'CARD',
     units bigint not null default 0,
     nanos smallint not null default 0,
@@ -39,11 +39,11 @@ create table customer_folder (
 );
 
 create table invite (
-    folder_owner_id uuid not null,
     folder_id uuid not null references folder on delete cascade,
-    invited_customer_id uuid not null,
+    invited_customer_id uuid not null references customer on delete cascade,
+    customer_role customer_folder_role not null default 'USER',
     created_at timestamptz default now(),
-    constraint invite_id primary key (folder_owner_id, folder_id, invited_customer_id)
+    constraint invite_id primary key (folder_id, invited_customer_id)
 );
 
 create table income (
@@ -51,7 +51,7 @@ create table income (
     title text,
     folder_id uuid references folder on delete cascade,
     income_category income_category not null,
-    customer_id uuid not null references customer,
+    customer_id uuid not null references customer on delete cascade,
     created_at timestamptz default now(),
     units bigint not null default 0,
     nanos smallint not null default 0,
