@@ -74,17 +74,19 @@ declare
                                      where folder.id = NEW.folder_id) + new.nanos) % 100;
 begin
     if rest_units = 0 then
-        update folder set units = NEW.units + folder.units where folder.id = NEW.folder_id;
-        update folder set nanos = NEW.nanos + folder.nanos where folder.id = NEW.folder_id;
+        update folder set units = folder.units + NEW.units where folder.id = NEW.folder_id;
+        update folder set nanos = folder.nanos + NEW.nanos where folder.id = NEW.folder_id;
         return NEW;
     end if;
 
     if rest_units > 0 then
-        update folder set units = NEW.units + folder.units + rest_units where folder.id = NEW.folder_id;
+        update folder set units = folder.units + NEW.units + rest_units where folder.id = NEW.folder_id;
         update folder set nanos = rest_nanos where folder.id = NEW.folder_id;
         return NEW;
     end if;
 
+    update folder set units = folder.units + NEW.units - 1 where folder.id = NEW.folder_id;
+    update folder set nanos = -rest_nanos where folder.id = NEW.folder_id;
     return NEW;
 end;
 $trigger_bound$
@@ -106,7 +108,16 @@ declare
     rest_nanos smallint := ((select nanos
                              from folder
                              where folder.id = OLD.folder_id) - OLD.nanos) % 100;
+    rest_units         smallint := ((select nanos
+                                     from folder
+                                     where folder.id = OLD.folder_id) + OLD.nanos) / 100;
 begin
+    if rest_units > 0 then
+        update folder set units = folder.units - OLD.units + rest_units where folder.id = NEW.folder_id;
+        update folder set nanos = rest_nanos where folder.id = NEW.folder_id;
+        return NEW;
+    end if;
+
     if rest_nanos < 0 then
         update folder set units = folder.units - OLD.units - 1 where folder.id = OLD.folder_id;
         update folder set nanos = 100 + rest_nanos where folder.id = OLD.folder_id;
