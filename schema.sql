@@ -5,7 +5,6 @@ create extension if not exists "uuid-ossp" with schema public;
 
 create type currency as enum ('UAH', 'USD');
 create type folder_type as enum ('CARD', 'CASH');
-create type income_category as enum ('FOOD', 'CAFE');
 create type gender as enum ('UNDEFINED', 'MALE', 'FEMALE');
 create type customer_folder_role as enum ('OWNER', 'ADMIN', 'USER');
 create type folder_skin as enum ('BLUE', 'GREEN', 'RED');
@@ -55,7 +54,7 @@ create table income
     id              uuid                     default public.uuid_generate_v4() primary key,
     title           text,
     folder_id       uuid references folder on delete cascade,
-    income_category income_category not null default 'FOOD',
+    income_category text not null,
     customer_id     uuid            not null references customer on delete cascade,
     created_at      timestamptz              default now(),
     units           bigint          not null default 0,
