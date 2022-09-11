@@ -17,19 +17,19 @@ create table customer
     nick_name  text,
     age        smallint,
     gender     gender           not null default 'UNDEFINED',
-    created_at timestamptz               default now()
+    created_at timestamptz      not null default now(),
+    token      text             not null
 );
 
 create table folder
 (
-    id          uuid                 default public.uuid_generate_v4() primary key,
-    title       text        not null,
-    folder_type folder_type not null default 'CARD',
-    units       bigint      not null default 0,
-    nanos       smallint    not null default 0,
-    currency    currency    not null default 'UAH',
-    skin        folder_skin not null default 'BLUE',
-    created_at  timestamptz          default now()
+    id          uuid           not null default public.uuid_generate_v4() primary key,
+    title       text           not null,
+    folder_type folder_type    not null default 'CARD',
+    amount      numeric(12, 2) not null default 0,
+    currency    currency       not null default 'UAH',
+    skin        folder_skin    not null default 'BLUE',
+    created_at  timestamptz    not null default now()
 );
 
 create table customer_folder
@@ -45,47 +45,27 @@ create table invite
     folder_id           uuid                 not null references folder on delete cascade,
     invited_customer_id uuid                 not null references customer on delete cascade,
     customer_role       customer_folder_role not null default 'USER',
-    created_at          timestamptz                   default now(),
+    created_at          timestamptz          not null default now(),
     constraint invite_id primary key (folder_id, invited_customer_id)
 );
 
 create table income
 (
-    id              uuid                     default public.uuid_generate_v4() primary key,
+    id              uuid           not null default public.uuid_generate_v4() primary key,
     title           text,
-    folder_id       uuid references folder on delete cascade,
-    income_category text not null,
-    customer_id     uuid            not null references customer on delete cascade,
-    created_at      timestamptz              default now(),
-    units           bigint          not null default 0,
-    nanos           smallint        not null default 0,
-    timezone        smallint        not null default 0
+    folder_id       uuid           not null references folder on delete cascade,
+    income_category text           not null,
+    customer_id     uuid           not null references customer on delete cascade,
+    created_at      timestamptz    not null default now(),
+    amount          numeric(12, 2) not null default 0,
+    timezone        smallint       not null default 0
 );
 
 create function add_amount_to_folder() returns trigger as
 $trigger_bound$
 declare
-    rest_units         smallint := ((select nanos
-                                     from folder
-                                     where folder.id = NEW.folder_id) + new.nanos) / 100;
-    declare rest_nanos smallint := ((select nanos
-                                     from folder
-                                     where folder.id = NEW.folder_id) + new.nanos) % 100;
 begin
-    if rest_units = 0 then
-        update folder set units = folder.units + NEW.units where folder.id = NEW.folder_id;
-        update folder set nanos = folder.nanos + NEW.nanos where folder.id = NEW.folder_id;
-        return NEW;
-    end if;
-
-    if rest_units > 0 then
-        update folder set units = folder.units + NEW.units + rest_units where folder.id = NEW.folder_id;
-        update folder set nanos = rest_nanos where folder.id = NEW.folder_id;
-        return NEW;
-    end if;
-
-    update folder set units = folder.units + NEW.units - 1 where folder.id = NEW.folder_id;
-    update folder set nanos = -rest_nanos where folder.id = NEW.folder_id;
+    update folder set amount = folder.amount + NEW.amount where folder.id = NEW.folder_id;
     return NEW;
 end;
 $trigger_bound$
@@ -104,28 +84,8 @@ execute procedure add_amount_to_folder();
 create function subtract_amount_to_folder() returns trigger as
 $trigger_bound$
 declare
-    rest_nanos smallint := ((select nanos
-                             from folder
-                             where folder.id = OLD.folder_id) - OLD.nanos) % 100;
-    rest_units         smallint := ((select nanos
-                                     from folder
-                                     where folder.id = OLD.folder_id) + OLD.nanos) / 100;
 begin
-    if rest_units > 0 then
-        update folder set units = folder.units - OLD.units + rest_units where folder.id = NEW.folder_id;
-        update folder set nanos = rest_nanos where folder.id = NEW.folder_id;
-        return NEW;
-    end if;
-
-    if rest_nanos < 0 then
-        update folder set units = folder.units - OLD.units - 1 where folder.id = OLD.folder_id;
-        update folder set nanos = 100 + rest_nanos where folder.id = OLD.folder_id;
-        return OLD;
-    end if;
-
-    update folder set units = folder.units - OLD.units where folder.id = OLD.folder_id;
-    update folder set nanos = folder.nanos - OLD.nanos where folder.id = OLD.folder_id;
-
+    update folder set amount = folder.amount - OLD.amount where folder.id = OLD.folder_id;
     return OLD;
 end;
 $trigger_bound$
