@@ -7,7 +7,7 @@ create type currency as enum ('UAH', 'USD');
 create type folder_type as enum ('CARD', 'CASH');
 create type gender as enum ('UNDEFINED', 'MALE', 'FEMALE');
 create type customer_folder_role as enum ('OWNER', 'ADMIN', 'USER');
-create type folder_skin as enum ('BLUE', 'GREEN', 'RED');
+create type folder_skin as enum ('SKIN1', 'SKIN2', 'SKIN3', 'SKIN4', 'SKIN5', 'SKIN6');
 
 create table customer
 (
@@ -28,7 +28,8 @@ create table folder
     folder_type folder_type    not null default 'CARD',
     amount      numeric(12, 2) not null default 0,
     currency    currency       not null default 'UAH',
-    skin        folder_skin    not null default 'BLUE',
+    skin        folder_skin    not null default 'SKIN1',
+    color       text           not null default '#3D424A',
     created_at  timestamptz    not null default now()
 );
 
